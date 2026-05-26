@@ -64,64 +64,167 @@ if df is not None:
     if st.button("🚀 Compile and Generate Executive PDF Report"):
         with st.spinner("Processing calculations and formatting layout styles..."):
             
-            # 1. Save an analytical plot image behind the scenes
-            plt.figure(figsize=(6, 3.5))
-            plt.plot(df['Month'], df['Revenue'], marker='o', color='#1f77b4', linewidth=2, label='Revenue')
-            plt.bar(df['Month'], df['Profit'], color='#2ca02c', alpha=0.7, label='Net Profit')
-            plt.title('Monthly Sales Performance Analysis', fontsize=12, fontweight='bold', pad=10)
-            plt.xlabel('Month')
-            plt.ylabel('Value ($)')
-            plt.legend(loc='upper left')
-            plt.grid(axis='y', linestyle='--', alpha=0.5)
+            # 1. FIXED: Adjusted chart dimensions and font sizes for crisp scaling
+            plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
+            fig, ax = plt.subplots(figsize=(6, 3)) # Shorter height to prevent it from looking huge
+            
+            ax.plot(df['Month'], df['Revenue'], marker='o', color='#1A365D', linewidth=2.5, label='Revenue')
+            ax.bar(df['Month'], df['Profit'], color='#2F855A', alpha=0.8, label='Net Profit', width=0.4)
+            
+            ax.set_title('Monthly Financial Trend Analysis', fontsize=11, fontweight='bold', color='#1A365D', pad=12)
+            ax.set_xlabel('Reporting Month', fontsize=9, color='#4A5568')
+            ax.set_ylabel('Amount ($)', fontsize=9, color='#4A5568')
+            ax.tick_params(axis='both', labelsize=8)
+            ax.legend(loc='upper left', fontsize=8, frameon=True)
+            ax.grid(True, axis='y', linestyle='--', alpha=0.6)
+            
             plt.tight_layout()
             
             chart_filename = "temp_chart.png"
-            plt.savefig(chart_filename, dpi=200)
+            plt.savefig(chart_filename, dpi=300) # Higher DPI for crisp lines
             plt.close()
             
-            # 2. Build the exact HTML layout matching our design standard
+            # 2. Build table rows dynamically
             table_rows_html = ""
             for index, row in df.iterrows():
                 table_rows_html += f"""
                 <tr>
-                    <td style="font-weight: bold;">{row['Month']}</td>
-                    <td style="text-align: right;">{row['Revenue']:,}.00</td>
-                    <td style="text-align: right;">{row['Expenses']:,}.00</td>
-                    <td style="text-align: right; font-weight: bold; color: #2F855A;">{row['Profit']:,}.00</td>
+                    <td style="font-weight: 600; color: #2D3748; padding: 10px 12px;">{row['Month']}</td>
+                    <td style="text-align: right; padding: 10px 12px;">${row['Revenue']:,}.00</td>
+                    <td style="text-align: right; padding: 10px 12px; color: #9B2C2C;">${row['Expenses']:,}.00</td>
+                    <td style="text-align: right; font-weight: bold; color: #2F855A; padding: 10px 12px;">${row['Profit']:,}.00</td>
                 </tr>
                 """
                 
+            # 3. FIXED: Premium corporate document template structure
             dynamic_html = f"""
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="utf-8">
                 <style>
-                    @page {{ size: A4; margin: 20mm 15mm; }}
-                    body {{ font-family: Arial, sans-serif; color: #2D3748; line-height: 1.6; }}
-                    .banner {{ background: linear-gradient(135deg, #1A365D 0%, #2A4365 100%); color: white; padding: 20px; margin-bottom: 20px; }}
-                    h2 {{ color: #1A365D; border-left: 4px solid #3182CE; padding-left: 10px; margin-top: 20px; }}
-                    table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
-                    th {{ background-color: #EDF2F7; color: #1A365D; padding: 8px; text-align: left; border-bottom: 2px solid #CBD5E0; }}
-                    td {{ padding: 8px; border-bottom: 1px solid #E2E8F0; }}
-                    tr:nth-child(even) {{ background-color: #F7FAFC; }}
+                    @page {{ 
+                        size: A4; 
+                        margin: 25mm 20mm 20mm 20mm; 
+                    }}
+                    body {{ 
+                        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                        color: #2D3748; 
+                        line-height: 1.6;
+                        font-size: 10pt;
+                    }}
+                    .header-container {{
+                        border-bottom: 2px solid #1A365D;
+                        padding-bottom: 8px;
+                        margin-bottom: 25px;
+                    }}
+                    .report-title {{ 
+                        color: #1A365D; 
+                        font-size: 22pt; 
+                        font-weight: bold;
+                        margin: 0 0 5px 0;
+                        letter-spacing: -0.5px;
+                    }}
+                    .report-subtitle {{
+                        color: #718096;
+                        font-size: 10pt;
+                        margin: 0;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                    }}
+                    .meta-table {{
+                        width: 100%;
+                        margin-bottom: 25px;
+                        font-size: 9pt;
+                        color: #4A5568;
+                    }}
+                    h2 {{ 
+                        color: #1A365D; 
+                        font-size: 13pt; 
+                        font-weight: bold;
+                        margin-top: 25px; 
+                        margin-bottom: 12px;
+                        border-bottom: 1px solid #E2E8F0;
+                        padding-bottom: 5px;
+                    }}
+                    p {{
+                        margin-bottom: 15px;
+                        color: #4A5568;
+                    }}
+                    .chart-wrapper {{
+                        text-align: center;
+                        margin: 20px 0;
+                        padding: 10px;
+                        border: 1px solid #E2E8F0;
+                        background-color: #F7FAFC;
+                        border-radius: 4px;
+                    }}
+                    /* FIXED: Controls exact scaling inside the PDF layout template */
+                    .chart-img {{
+                        width: 100%;
+                        max-width: 480px;
+                        height: auto;
+                    }}
+                    table {{ 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        margin-top: 15px; 
+                        font-size: 9.5pt;
+                    }}
+                    th {{ 
+                        background-color: #1A365D; 
+                        color: white; 
+                        padding: 10px 12px; 
+                        text-align: left; 
+                        font-weight: 600;
+                    }}
+                    td {{ 
+                        border-bottom: 1px solid #E2E8F0; 
+                    }}
+                    tr:nth-child(even) td {{ 
+                        background-color: #F7FAFC; 
+                    }}
+                    .total-row td {{
+                        background-color: #EDF2F7 !important;
+                        border-top: 2px solid #1A365D;
+                        border-bottom: 2px solid #1A365D;
+                        font-weight: bold;
+                        color: #1A365D;
+                    }}
                 </style>
             </head>
             <body>
-                <div class="banner">
-                    <h1 style="margin:0; font-size:20pt;">📊 Executive Performance Report</h1>
-                    <p style="margin:5px 0 0 0; color:#E2E8F0; font-size:10pt;">Generated Dynamically via Python Automated Engine Pipeline</p>
+                <div class="header-container">
+                    <h1 class="report-title">Executive Performance Report</h1>
+                    <p class="report-subtitle">Corporate Operational Analytics & Intelligence</p>
                 </div>
+                
+                <table class="meta-table">
+                    <tr>
+                        <td><strong>Prepared For:</strong> Retail Operations Portfolio</td>
+                        <td style="text-align: right;"><strong>Date:</strong> May 2026</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Analysis Pipeline:</strong> Automated Data Engine</td>
+                        <td style="text-align: right;"><strong>Status:</strong> Final Distribution</td>
+                    </tr>
+                </table>
+                
                 <h2>1. Financial Summary Indicators</h2>
-                <p>Gross Aggregated Revenue: <b>${total_rev:,}</b> | Cleared Yield Margin: <b>${total_profit:,}</b></p>
+                <p>
+                    This automated document compiles multi-channel transactional records processed through our standard analytics script. Top-line generated revenue reached an aggregate of <b>${total_rev:,}.00</b>, yielding a net corporate cleared profit of <b>${total_profit:,}.00</b> after accounting for all baseline operating overhead allocations.
+                </p>
                 
                 <h2>2. Metrics Visualization Trend</h2>
-                <div style="text-align:center;"><img src="{chart_filename}" width="450"/></div>
+                <div class="chart-wrapper">
+                    <img class="chart-img" src="{chart_filename}"/>
+                </div>
                 
                 <h2>3. Consolidated Transaction Ledger</h2>
                 <table>
                     <thead>
                         <tr>
-                            <th>Month</th>
+                            <th>Reporting Month</th>
                             <th style="text-align: right;">Revenue ($)</th>
                             <th style="text-align: right;">Expenses ($)</th>
                             <th style="text-align: right;">Net Profit ($)</th>
@@ -129,13 +232,19 @@ if df is not None:
                     </thead>
                     <tbody>
                         {table_rows_html}
+                        <tr class="total-row">
+                            <td style="padding: 12px;">Total H1 Summary</td>
+                            <td style="text-align: right; padding: 12px;">${total_rev:,}.00</td>
+                            <td style="text-align: right; padding: 12px; color: #9B2C2C;">${total_exp:,}.00</td>
+                            <td style="text-align: right; padding: 12px; color: #2F855A;">${total_profit:,}.00</td>
+                        </tr>
                     </tbody>
                 </table>
             </body>
             </html>
             """
             
-            # --- FIXED AND CORRECTLY INDENTED HERE ---
+            # Write layout string locally using universal internet standard formatting
             with open("temp_report.html", "w", encoding="utf-8") as f:
                 f.write(dynamic_html)
                 
